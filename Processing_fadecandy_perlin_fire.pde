@@ -4,7 +4,7 @@
  Notes     :  Flames rising up the screen
 
  The fire effect has been used quite often for oldskool demos.
- First you create a palette of 256 colors ranging from red to
+ First you create a palette of N colors ranging from red to
  yellow (including black). For every frame, calculate each row
  of pixels based on the two rows below it: The value of each pixel,
  becomes the sum of the 3 pixels below it (one directly below, one
@@ -21,6 +21,7 @@ import java.io.FileOutputStream;
 import java.util.Arrays;
 
 // size of fire effect
+final int nColors = 1024;
 int w=960/2;
 int h=540/2;
 
@@ -46,12 +47,6 @@ float spacing;
 int x0;
 int y0;
 
-private void copyArea(PGraphics from, PGraphics to,int x,int y, int width3, int height3,int dx,int dy)
-{
-  PImage cp = from.get(x,y,width3,height3);
-  to.image(cp,x+dx,y+dy);
-}
-
 void setup() {
 
   size (480, 270, P2D);
@@ -59,8 +54,7 @@ void setup() {
 
   //frameRate(80);
 
-
-  flame_palette = new int[256];
+  flame_palette = new int[nColors];
 
   widthLeft = w-1;
   widthRight = w+1;
@@ -69,12 +63,12 @@ void setup() {
   fire_buffer = new int[fire_length+widthRight];
 
   // generate flame color palette in RGB. need 256 bytes available memory
-  for (int i=0; i<64; i++)
+  for (int i=0; i<nColors/4; i++)
   {
-    flame_palette[i]  = color(i<<2, 0, 0,i<<3);      // Black to red
-    flame_palette[i+64]  = color(255, i<<2, 0); // Red to yellow
-    flame_palette[i+128]  = color(255, 255, i<<2); // Yellow to white,
-    flame_palette[i+192]  = color(255, 255, 255);   // White
+    flame_palette[i]  = color(scale(i,nColors/4,64<<2), 0, 0,scale(i,nColors/4,64<<3));      // Black to red
+    flame_palette[i+nColors/4]  = color(255, scale(i,nColors/4,64<<2), 0); // Red to yellow
+    flame_palette[i+nColors/2]  = color(255, 255, scale(i,nColors/4,64<<2)); // Yellow to white,
+    flame_palette[i+3*nColors/4]  = color(255, 255, 255);   // White
   }
 
   //  tile = loadInts("perline_fire_480_256.dat");
@@ -101,6 +95,9 @@ void setup() {
 
 }
 
+int scale(int i, int end, int max) {
+  return i * max / end;
+}
 
 /**
  * Saves an int array as raw data (Big Endian order)
@@ -195,7 +192,7 @@ int[] makeTile (int w, int h) {
 
       double noisea = u*v*noise00 + u*(1-v)*noise01 + (1-u)*v*noise10 + (1-u)*(1-v)*noise11;
 
-      int value = (int) (255* noisea) &0xFF;
+      int value = abs((int)((nColors - 1)* noisea) % nColors);
       // value = ((int) (255* noise((float)(x*ns), (float)(counterr++*ns),0)));// (int)random(255);
 
       int r = value;

@@ -35,6 +35,17 @@ int fire_length;
 PImage img;
 PGraphics effect;
 
+OPC opc;
+
+final int boxesAcross = 2;
+final int boxesDown = 2;
+final int ledsAcross = 8;
+final int ledsDown = 8;
+// initialized in setup()
+float spacing;
+int x0;
+int y0;
+
 private void copyArea(PGraphics from, PGraphics to,int x,int y, int width3, int height3,int dx,int dy)
 {
   PImage cp = from.get(x,y,width3,height3);
@@ -71,6 +82,23 @@ void setup() {
   //  saveInts("perline_fire_480_256.dat", tile);
   noSmooth();
   Arrays.fill(fire_buffer,0,fire_length,32);
+
+  // Connect to the local instance of fcserver
+  opc = new OPC(this, "127.0.0.1", 7890);
+
+  spacing = (float)min(height / (boxesDown * ledsDown + 1), width / (boxesAcross * ledsAcross + 1));
+  x0 = (int)(width - spacing * (boxesAcross * ledsAcross - 1)) / 2;
+  y0 = (int)(height - spacing * (boxesDown * ledsDown - 1)) / 2;
+
+  final int boxCentre = (int)((ledsAcross - 1) / 2.0 * spacing); // probably using the centre in the ledGrid8x8 method
+  int ledCount = 0;
+  for (int y = 0; y < boxesDown; y++) {
+    for (int x = 0; x < boxesAcross; x++) {
+      opc.ledGrid8x8(ledCount, x0 + spacing * x * ledsAcross + boxCentre, y0 + spacing * y * ledsDown + boxCentre, spacing, 0, false, false);
+      ledCount += ledsAcross * ledsDown;
+    }
+  }
+
 }
 
 
@@ -188,4 +216,3 @@ int[] makeTile (int w, int h) {
   }
   return tile;
 }
-

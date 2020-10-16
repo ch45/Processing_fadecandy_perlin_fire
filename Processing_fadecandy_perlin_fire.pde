@@ -37,6 +37,8 @@ PImage img;
 PGraphics effect;
 
 OPC opc;
+final String fcServerHost = "127.0.0.1";
+final int fcServerPort = 7890;
 
 final int boxesAcross = 2;
 final int boxesDown = 2;
@@ -47,7 +49,11 @@ float spacing;
 int x0;
 int y0;
 
+int exitTimer = 0; // Run forever unless set by command line
+
 void setup() {
+
+  apply_cmdline_args();
 
   size (480, 270, P2D);
   effect = createGraphics(w,h,P2D);
@@ -77,8 +83,8 @@ void setup() {
   noSmooth();
   Arrays.fill(fire_buffer,0,fire_length,32);
 
-  // Connect to the local instance of fcserver
-  opc = new OPC(this, "127.0.0.1", 7890);
+  // Connect to an instance of fcserver
+  opc = new OPC(this, fcServerHost, fcServerPort);
 
   spacing = (float)min(height / (boxesDown * ledsDown + 1), width / (boxesAcross * ledsAcross + 1));
   x0 = (int)(width - spacing * (boxesAcross * ledsAcross - 1)) / 2;
@@ -169,6 +175,11 @@ void draw() {
 
   background(0);
   image(effect,0,0);
+
+  fill(128);
+  text(String.format("%5.1f fps", frameRate), 5, 15);
+
+  check_exit();
 }
 
 float ns = 0.015;  //increase this to get higher density
@@ -212,4 +223,34 @@ int[] makeTile (int w, int h) {
     }
   }
   return tile;
+}
+
+void apply_cmdline_args() {
+
+  if (args == null) {
+    return;
+  }
+
+  for (String exp: args) {
+    String[] comp = exp.split("=");
+    switch (comp[0]) {
+    case "exit":
+      exitTimer = parseInt(comp[1], 10);
+      println("exit after " + exitTimer + "s");
+      break;
+    }
+  }
+}
+
+void check_exit() {
+
+  if (exitTimer == 0) { // skip if not run from cmd line
+    return;
+  }
+
+  int m = millis();
+  if (m / 1000 >= exitTimer) {
+    println(String.format("average %.1f fps", (float)frameCount / exitTimer));
+    exit();
+  }
 }

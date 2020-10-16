@@ -34,7 +34,6 @@ int widthRight;
 int fire_length;
 
 PImage img;
-PGraphics effect;
 
 OPC opc;
 final String fcServerHost = "127.0.0.1";
@@ -55,10 +54,7 @@ void setup() {
 
   apply_cmdline_args();
 
-  size (480, 270, P2D);
-  effect = createGraphics(w,h,P2D);
-
-  //frameRate(80);
+  size (480, 270);
 
   flame_palette = new int[nColors];
 
@@ -152,9 +148,10 @@ void draw() {
   // look up table - should be fastest
   arrayCopy(tile, (frameCount&0xfff)*w, fire_buffer, fire_length,w);
 
+  background(0);
+
   // Do the fire calculations for every pixel, from top to bottom
-  effect.beginDraw();
-  effect.loadPixels();
+  loadPixels();
 
   int currentPixel=0;
 
@@ -168,13 +165,9 @@ void draw() {
       + fire_buffer[currentPixelIndex+widthRight]))>>2)-1;
 
     if (currentPixel > 0)
-      effect.pixels[currentPixelIndex] = flame_palette[currentPixel];
+      pixels[currentPixelIndex] = flame_palette[currentPixel];
   }
-  effect.updatePixels();
-  effect.endDraw();
-
-  background(0);
-  image(effect,0,0);
+  updatePixels();
 
   fill(128);
   text(String.format("%5.1f fps", frameRate), 5, 15);

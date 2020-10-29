@@ -56,6 +56,8 @@ void setup() {
 
   size (480, 270);
 
+  frameRate(80);
+
   flame_palette = new int[nColors];
 
   widthLeft = w-1;
@@ -79,8 +81,10 @@ void setup() {
   noSmooth();
   Arrays.fill(fire_buffer,0,fire_length,32);
 
-  // Connect to an instance of fcserver
+  background(0);
+
   opc = new OPC(this, fcServerHost, fcServerPort);
+  opc.showLocations(false);
 
   spacing = (float)min(height / (boxesDown * ledsDown + 1), width / (boxesAcross * ledsAcross + 1));
   x0 = (int)(width - spacing * (boxesAcross * ledsAcross - 1)) / 2;
@@ -148,7 +152,6 @@ void draw() {
   // look up table - should be fastest
   arrayCopy(tile, (frameCount&0xfff)*w, fire_buffer, fire_length,w);
 
-  background(0);
 
   // Do the fire calculations for every pixel, from top to bottom
   loadPixels();
@@ -197,22 +200,9 @@ int[] makeTile (int w, int h) {
       double noisea = u*v*noise00 + u*(1-v)*noise01 + (1-u)*v*noise10 + (1-u)*(1-v)*noise11;
 
       int value = abs((int)((nColors - 1)* noisea) % nColors);
-      // value = ((int) (255* noise((float)(x*ns), (float)(counterr++*ns),0)));// (int)random(255);
+      // value = ((int) ((nColors - 1)* noise((float)(x*ns), (float)(counterr++*ns),0)));// (int)random(255);
 
-      int r = value;
-      int g = value;
-      int b = value;
-
-
-      if (r > 255) r = 255;
-      if (r < 0) r = 0;
-
-      if (g > 255) g = 255;
-      if (g < 0) g = 0;
-
-      if (b > 255) b = 255;
-      if (b < 0) b = 0;
-      tile[x + y*w] = value;//color(r&0xFF,g&0xFF,b&0xFF);
+      tile[x + y*w] = value;
     }
   }
   return tile;

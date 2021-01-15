@@ -43,6 +43,8 @@ final int boxesAcross = 2;
 final int boxesDown = 2;
 final int ledsAcross = 8;
 final int ledsDown = 8;
+final int backgroundColour = 0;
+final int textColour = 128;
 // initialized in setup()
 float spacing;
 int x0;
@@ -172,10 +174,17 @@ void draw() {
   }
   updatePixels();
 
-  fill(128);
-  text(String.format("%5.1f fps", frameRate), 5, 15);
+  if ((frameCount & 0x07) == 0) showFrameRate(); // Occasionally show the frame rate
 
   check_exit();
+}
+
+void showFrameRate() {
+  fill(backgroundColour);
+  rect(5, 4, 58, 14);
+  fill(textColour);
+  textSize(12);
+  text(String.format("%5.1f fps", frameRate), 5, 15);
 }
 
 float ns = 0.015;  //increase this to get higher density
